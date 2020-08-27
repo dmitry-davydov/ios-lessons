@@ -50,6 +50,3 @@ func ex3(_ moneyAmount: Double, _ percent: Double) -> Double {
     
     return result
 }
-
-let r = ex3(10, 5)
-print(r)
