@@ -19,19 +19,21 @@ arr = arr.filter({(num) -> Bool in
 })
 
 // 5. * Написать функцию, которая добавляет в массив новое число Фибоначчи, и добавить при помощи нее 100 элементов.
-func fib(_ num: Int) -> UInt64 {
-    if num < 2 {
-        return 1
-    }
+func fib(_ num: Int) -> Decimal {
+    var a: Decimal = 1
+    var b: Decimal = 1
+    guard num > 1 else { return a }
     
-    return fib(num - 1) + fib(num - 2)
+    (2...num).forEach { _ in
+        (a, b) = (a + b, a)
+    }
+    return a
 }
 
-var fibbArr: [UInt64] = []
+var fibbArr: [Decimal] = []
 
 for num in 1...100 {
     let f = fib(num)
-    print(f)
     fibbArr.append(f)
 }
 
