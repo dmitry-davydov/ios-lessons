@@ -43,8 +43,8 @@ struct Car {
         self.isWindowsOpened = newState
     }
     
-    mutating func changePayloadState(newState: PayloadActions, size: UInt) {
-        switch newState {
+    mutating func changePayloadState(action: PayloadActions, size: UInt) {
+        switch action {
         case .load:
             if self.usedPayloadSize + size > self.payloadSize {
                 print("Error: Can not load more than total size")
@@ -81,11 +81,11 @@ car.dumpState()
 
 car.changeEngineState(newState: .started)
 car.changeWindowsState(newState: .opened)
-car.changePayloadState(newState: .load, size: 10)
+car.changePayloadState(action: .load, size: 10)
 
 car.dumpState()
 
-car.changePayloadState(newState: .unload, size: 20)
+car.changePayloadState(action: .unload, size: 20)
 car.dumpState()
 
 car .changeWindowsState(newState: .closed)
