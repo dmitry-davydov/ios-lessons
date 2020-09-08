@@ -4,6 +4,81 @@ enum StateCategory {
     case windows, engine
 }
 
+protocol TrunkProtocol {
+    mutating func loadTrunk(_ size: UInt) -> Void
+    mutating func unloadTrunk(_ size: UInt) -> Void
+}
+
+protocol Trunkable: TrunkProtocol {
+    var trunk: Trunk {get set}
+}
+
+extension Trunkable {
+    mutating func loadTrunk(_ size: UInt) -> Void {
+        if !trunk.canLoad(size: size) {
+            return
+        }
+
+        trunk.load(size)
+    }
+
+    mutating func unloadTrunk(_ size: UInt) -> Void {
+        if !trunk.canUnload(size: size) {
+            return
+        }
+
+        trunk.unload(size)
+    }
+}
+
+protocol TrunkChainable: TrunkProtocol {
+    var trunkChain: [Trunk] {get set}
+    var maxTrunkChainNumber: UInt {get set}
+    
+    mutating func attachTrunk(size: UInt) -> Void
+    mutating func detachTrunk() -> Void
+}
+
+extension TrunkChainable {
+    mutating func loadTrunk(_ size: UInt) -> Void {
+        for i in trunkChain.indices {
+            if !trunkChain[i].canLoad(size: size) {
+                continue
+            }
+
+            trunkChain[i].load(size)
+            break
+        }
+    }
+
+    mutating func unloadTrunk(_ size: UInt) -> Void {
+        for i in trunkChain.indices.reversed() {
+            print(i)
+            if !trunkChain[i].canUnload(size: size) {
+                continue
+            }
+
+            trunkChain[i].unload(size)
+            break
+        }
+    }
+    
+    mutating func attachTrunk(size: UInt) -> Void {
+        if maxTrunkChainNumber <= trunkChain.count {
+            return
+        }
+        trunkChain.append(Trunk(size: size))
+    }
+
+    mutating func detachTrunk() -> Void {
+        if trunkChain.count == 0 {
+            return
+        }
+        trunkChain.remove(at: trunkChain.count - 1)
+    }
+}
+
+
 protocol CarProtocol {
     var states: [StateCategory: BooleanStateProtocol] {get set}
     func asString() -> String
@@ -32,11 +107,6 @@ struct State: BooleanStateProtocol {
     func asString() -> String {
         return "\(name) is \(value ? trueStateTitle : falseStateTitle)"
     }
-}
-
-protocol TrunkProtocol {
-    func loadTrunk(size: UInt) -> Void
-    func unloadTrunk(size: UInt) -> Void
 }
 
 enum Actions {
@@ -84,10 +154,14 @@ struct Trunk {
     }
 }
 
-class Car: CarProtocol {
+class Car: CarProtocol, CustomStringConvertible {
     let brand: String
     let manufacturedAtYear: UInt
-    
+    var description: String {
+        get {
+            return self.asString()
+        }
+    }
     var states: [StateCategory: BooleanStateProtocol] = [:]
     
     func addState(state: BooleanStateProtocol) -> Self {
@@ -122,22 +196,9 @@ class Car: CarProtocol {
         
         return descriptionParts.joined(separator: "\n")
     }
-    
-    func loadTrunk(size: UInt) {
-        print("Err: Trunk is not found")
-    }
-    func unloadTrunk(size: UInt) {
-        print("Err :Trunk is not found")
-    }
 }
 
-class SportCar: Car, CustomStringConvertible {
-    var description: String {
-        get {
-            return self.asString()
-        }
-    }
-    
+class SportCar: Car, Trunkable {
     var trunk: Trunk
 
     init(brand: String, manufacturedAtYear: UInt, trunkSize: UInt) {
@@ -152,51 +213,16 @@ class SportCar: Car, CustomStringConvertible {
         Trunk: \(trunk.state())
         """
     }
-
-    override func loadTrunk(size: UInt) {
-        if !trunk.canLoad(size: size) {
-            return
-        }
-
-        trunk.load(size)
-    }
-
-    override func unloadTrunk(size: UInt) {
-        if !trunk.canUnload(size: size) {
-            return
-        }
-
-        trunk.unload(size)
-    }
 }
 
-class TrunkCar: Car, CustomStringConvertible {
-    var description: String {
-        get {
-            return asString()
-        }
-    }
+class TrunkCar: Car, TrunkChainable {
+    var trunkChain: [Trunk] = []
+    var maxTrunkChainNumber: UInt
     
-    var maxTrunksCount: UInt8
-    var trunkTrain: [Trunk] = []
 
-    init(brand: String, manufacturedAtYear: UInt, maxTrunksCount: UInt8) {
-        self.maxTrunksCount = maxTrunksCount
+    init(brand: String, manufacturedAtYear: UInt, maxTrunksCount: UInt) {
+        self.maxTrunkChainNumber = maxTrunksCount
         super.init(brand: brand, manufacturedAtYear: manufacturedAtYear)
-    }
-
-    func attachTrunk(size: UInt) {
-        if maxTrunksCount <= trunkTrain.count {
-            return
-        }
-        trunkTrain.append(Trunk(size: size))
-    }
-
-    func detachTrunk() {
-        if trunkTrain.count == 0 {
-            return
-        }
-        trunkTrain.remove(at: trunkTrain.count - 1)
     }
 
     override func asString() -> String {
@@ -204,46 +230,22 @@ class TrunkCar: Car, CustomStringConvertible {
             super.asString()
         ]
 
-        if trunkTrain.count == 0 {
+        if trunkChain.count == 0 {
             descriptionParts.append("Trunk is not attached")
         } else {
-            descriptionParts.append("Attached \(trunkTrain.count) trunks")
+            descriptionParts.append("Attached \(trunkChain.count) trunks")
         }
 
-        for t in trunkTrain {
+        for t in trunkChain {
             descriptionParts.append(t.state())
         }
 
         return descriptionParts.joined(separator: "\n")
     }
-
-
-    override func loadTrunk(size: UInt) {
-        for i in trunkTrain.indices {
-            if !trunkTrain[i].canLoad(size: size) {
-                continue
-            }
-
-            trunkTrain[i].load(size)
-            break
-        }
-    }
-
-    override func unloadTrunk(size: UInt) {
-        for i in trunkTrain.indices.reversed() {
-            print(i)
-            if !trunkTrain[i].canUnload(size: size) {
-                continue
-            }
-
-            trunkTrain[i].unload(size)
-            break
-        }
-    }
 }
 
 
-let tc1 = TrunkCar(brand: "Volvo", manufacturedAtYear: 2020, maxTrunksCount: 3)
+var tc1 = TrunkCar(brand: "Volvo", manufacturedAtYear: 2020, maxTrunksCount: 3)
 tc1
     .addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "closed"))
     .addState(state: State(category: StateCategory.windows, name: "Windows", trueStateTitle: "opened", falseStateTitle: "closed"))
@@ -252,33 +254,33 @@ tc1.attachTrunk(size: 10)
 tc1.attachTrunk(size: 100)
 tc1.attachTrunk(size: 1_000)
 
-tc1.loadTrunk(size: 11)
-tc1.loadTrunk(size: 11)
-tc1.loadTrunk(size: 79)
+tc1.loadTrunk(11)
+tc1.loadTrunk(11)
+tc1.loadTrunk(79)
 
 tc1.changeState(stateCategory: .engine, value: true)
 
-let tc2 = TrunkCar(brand: "MB", manufacturedAtYear: 1990, maxTrunksCount: 1)
+var tc2 = TrunkCar(brand: "MB", manufacturedAtYear: 1990, maxTrunksCount: 1)
 tc2
     .addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "closed"))
     .addState(state: State(category: StateCategory.windows, name: "Windows", trueStateTitle: "opened", falseStateTitle: "closed"))
 
 tc2.attachTrunk(size: 20_000)
-tc2.loadTrunk(size: 10_000)
+tc2.loadTrunk(10_000)
 tc2.changeState(stateCategory: .engine, value: true)
 
-let sc1 = SportCar(brand: "VAZ 2108", manufacturedAtYear: 1988, trunkSize: 50)
+var sc1 = SportCar(brand: "VAZ 2108", manufacturedAtYear: 1988, trunkSize: 50)
 sc1
     .addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "closed"))
     .addState(state: State(category: StateCategory.windows, name: "Windows", trueStateTitle: "opened", falseStateTitle: "closed"))
 
-sc1.loadTrunk(size: 30)
+sc1.loadTrunk(30)
 sc1.changeState(stateCategory: .windows, value: true)
 sc1.changeState(stateCategory: .engine, value: true)
 
-let sc2 = SportCar(brand: "VAZ 2104", manufacturedAtYear: 1989, trunkSize: 100)
+var sc2 = SportCar(brand: "VAZ 2104", manufacturedAtYear: 1989, trunkSize: 100)
 sc2.addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "closed"))
-sc2.loadTrunk(size: 30)
+sc2.loadTrunk(30)
 sc2.changeState(stateCategory: .engine, value: true)
 
 
