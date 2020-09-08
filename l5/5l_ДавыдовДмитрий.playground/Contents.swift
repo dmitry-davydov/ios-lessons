@@ -247,7 +247,7 @@ class TrunkCar: Car, TrunkChainable {
 
 var tc1 = TrunkCar(brand: "Volvo", manufacturedAtYear: 2020, maxTrunksCount: 3)
 tc1
-    .addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "closed"))
+    .addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "stopped"))
     .addState(state: State(category: StateCategory.windows, name: "Windows", trueStateTitle: "opened", falseStateTitle: "closed"))
 
 tc1.attachTrunk(size: 10)
@@ -260,9 +260,10 @@ tc1.loadTrunk(79)
 
 tc1.changeState(stateCategory: .engine, value: true)
 
+
 var tc2 = TrunkCar(brand: "MB", manufacturedAtYear: 1990, maxTrunksCount: 1)
 tc2
-    .addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "closed"))
+    .addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "stopped"))
     .addState(state: State(category: StateCategory.windows, name: "Windows", trueStateTitle: "opened", falseStateTitle: "closed"))
 
 tc2.attachTrunk(size: 20_000)
@@ -271,7 +272,7 @@ tc2.changeState(stateCategory: .engine, value: true)
 
 var sc1 = SportCar(brand: "VAZ 2108", manufacturedAtYear: 1988, trunkSize: 50)
 sc1
-    .addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "closed"))
+    .addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "stopped"))
     .addState(state: State(category: StateCategory.windows, name: "Windows", trueStateTitle: "opened", falseStateTitle: "closed"))
 
 sc1.loadTrunk(30)
@@ -279,11 +280,14 @@ sc1.changeState(stateCategory: .windows, value: true)
 sc1.changeState(stateCategory: .engine, value: true)
 
 var sc2 = SportCar(brand: "VAZ 2104", manufacturedAtYear: 1989, trunkSize: 100)
-sc2.addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "closed"))
+sc2.addState(state: State(category: StateCategory.engine, name: "Engine", trueStateTitle: "started", falseStateTitle: "stopped"))
 sc2.loadTrunk(30)
-sc2.changeState(stateCategory: .engine, value: true)
+sc2.changeState(stateCategory: .windows, value: true)
 
 
+print(tc1)
+print("--")
+tc1.detachTrunk()
 print(tc1)
 print("--")
 print(tc2)
