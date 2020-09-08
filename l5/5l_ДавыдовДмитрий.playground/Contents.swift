@@ -109,20 +109,6 @@ struct State: BooleanStateProtocol {
     }
 }
 
-enum Actions {
-    enum Cargo {
-        case Load, Unload
-    }
-
-    enum Engine {
-        case Start, Stop
-    }
-
-    enum Windows {
-        case Open, Close
-    }
-}
-
 struct Trunk {
     var totalSize: UInt
     var usedSize: UInt = 0
