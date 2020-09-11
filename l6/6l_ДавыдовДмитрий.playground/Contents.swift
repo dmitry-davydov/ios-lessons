@@ -60,6 +60,10 @@ struct Queue<T: Workable> {
         return resultPayloadList
     }
     
+    func filter(by: (T) -> Bool) -> [T] {
+        return queue.filter { by($0) }
+    }
+    
     var count: Int {
         return queue.count
     }
@@ -114,3 +118,5 @@ queue.push(PayloadQueue(priority: .High))
 
 print(queue[2] as Any)
 print(queue[0] as Any)
+
+print(queue.filter(by: {$0.priority == .Low}))
