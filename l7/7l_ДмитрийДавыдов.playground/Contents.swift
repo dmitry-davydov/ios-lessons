@@ -6,8 +6,6 @@ extension String: LocalizedError {
     }
 }
 
-var pragmaticCarList: [Car] = []
-
 struct Car {
     var fuelConsumption: UInt
     var manufacturedAtYear: UInt
@@ -95,8 +93,7 @@ class PragmaticCarStorage {
         let (car, errors) = validation.validate(c)
         print(errors)
         guard errors.count == 0 else {
-            let errorMessages = errors.map({$0.errorDescription})
-            throw "Car can not be pragmatic. " + errorMessages.joined(separator: "; ")
+            throw "Car can not be pragmatic. " + errors.map({$0.errorDescription}).joined(separator: "; ")
         }
         
         storage.append(car!)
